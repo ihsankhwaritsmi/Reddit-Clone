@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h1>Welcome to the Home Page</h1>
+
+    <h2>My Posts</h2>
+    <ul>
+        {{range .MyPosts}}
+        <li>
+            <h3>{{.PostTitle}}</h3>
+            <p>{{.PostBody}}</p>
+            <p>Likes: {{.LikeCount}}</p>
+        </li>
+        {{else}}
+        <li>No posts available</li>
+        {{end}}
+    </ul>
+
+    <h2>All Posts</h2>
+    <ul>
+        {{range .AllPosts}}
+        <li>
+            <h3>{{.PostTitle}}</h3>
+            <p>{{.PostBody}}</p>
+            <p>Likes: {{.LikeCount}}</p>
+        </li>
+        {{else}}
+        <li>No posts available</li>
+        {{end}}
+    </ul>
+
+    <a href="/logout">Logout</a>
+</body>
+</html>
