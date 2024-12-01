@@ -1,37 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Welcome to the Home Page</h1>
+<body class="bg-gray-100">
 
-    <h2>My Posts</h2>
-    <ul>
-        {{range .MyPosts}}
-        <li>
-            <h3>{{.PostTitle}}</h3>
-            <p>{{.PostBody}}</p>
-            <p>Likes: {{.LikeCount}}</p>
-        </li>
-        {{else}}
-        <li>No posts available</li>
-        {{end}}
-    </ul>
+    <div class="min-h-screen flex flex-col items-center justify-start p-6">
+        <div class="w-full max-w-4xl bg-white p-8 rounded-lg shadow-lg">
+            
+            <!-- Profile Button (Top Right) -->
+            <div class="absolute top-4 right-4 flex items-center space-x-2">
+                <!-- Profile Picture -->
+                <a href="/me" class="flex items-center space-x-2">
+                    <!-- Avatar placeholder -->
+                    <div class="w-12 h-12 bg-gray-300 text-white text-center flex items-center justify-center rounded-full font-semibold">
+                        P <!-- Ganti dengan huruf pertama nama pengguna atau apapun yang Anda suka -->
+                    </div>
+                </a>
+                
+            </div>
 
-    <h2>All Posts</h2>
-    <ul>
-        {{range .AllPosts}}
-        <li>
-            <h3>{{.PostTitle}}</h3>
-            <p>{{.PostBody}}</p>
-            <p>Likes: {{.LikeCount}}</p>
-        </li>
-        {{else}}
-        <li>No posts available</li>
-        {{end}}
-    </ul>
+            <h1 class="text-4xl font-semibold text-gray-800 text-center mb-8">Welcome to the Home Page</h1>
 
-    <a href="/logout">Logout</a>
+            <!-- My Posts Section -->
+            <section class="mb-8">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">My Posts</h2>
+                <ul>
+                    {{range .MyPosts}}
+                    <li class="bg-gray-50 p-4 mb-4 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold text-gray-800">{{.PostTitle}}</h3>
+                        <p class="text-gray-600 mt-2">{{.PostBody}}</p>
+                        <p class="text-gray-500 mt-2">Likes: {{.LikeCount}}</p>
+                    </li>
+                    {{else}}
+                    <li class="text-gray-600">No posts available</li>
+                    {{end}}
+                </ul>
+            </section>
+
+            <!-- All Posts Section -->
+            <section>
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">All Posts</h2>
+                <ul>
+                    {{range .AllPosts}}
+                    <li class="bg-gray-50 p-4 mb-4 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold text-gray-800">{{.PostTitle}}</h3>
+                        <p class="text-gray-600 mt-2">{{.PostBody}}</p>
+                        <p class="text-gray-500 mt-2">Likes: {{.LikeCount}}</p>
+                    </li>
+                    {{else}}
+                    <li class="text-gray-600">No posts available</li>
+                    {{end}}
+                </ul>
+            </section>
+
+            <!-- Logout Link -->
+            <div class="mt-8 text-center">
+                <a href="/logout" class="text-blue-600 hover:underline">Logout</a>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

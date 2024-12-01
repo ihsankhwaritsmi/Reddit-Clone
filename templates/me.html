@@ -1,12 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>My Profile</h1>
-    <p><strong>Username:</strong> {{.Username}}</p>
-    <p><strong>Email:</strong> {{.Email}}</p>
-    <a href="/home">Back to Home</a>
+
+<body class="bg-gray-100 font-sans">
+
+    <div class="min-h-screen flex items-center justify-center p-6">
+        <!-- Profile Card -->
+        <div class="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full">
+            <div class="flex justify-center mb-6">
+                <img class="w-20 h-20 rounded-full border-4 border-blue-600" src="https://via.placeholder.com/150" alt="Profile Picture">
+            </div>
+
+            <h1 class="text-3xl font-semibold text-center text-gray-800 mb-4">
+                My Profile
+            </h1>
+
+            <!-- Username and Email -->
+            <div class="space-y-4">
+                <p class="text-lg text-gray-700">
+                    <strong class="font-semibold text-gray-900">Username:</strong> 
+                    <span class="text-gray-600">{{.Username}}</span>
+                </p>
+                <p class="text-lg text-gray-700">
+                    <strong class="font-semibold text-gray-900">Email:</strong> 
+                    <span class="text-gray-600">{{.Email}}</span>
+                </p>
+            </div>
+
+            <!-- Back to Home Button -->
+            <div class="mt-6">
+                <a href="/home" class="w-full py-3 px-6 text-center bg-blue-600 text-white font-semibold rounded-lg shadow-lg transform hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition ease-in-out duration-200">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
 </body>
+
 </html>
