@@ -24,6 +24,10 @@ func main() {
 	http.HandleFunc("/me", authMiddleware(meHandler))
 	http.HandleFunc("/logout", authMiddleware(logoutHandler))
 
+	http.HandleFunc("/post/create", authMiddleware(createPostHandler))
+    http.HandleFunc("/post/edit", authMiddleware(editPostHandler))
+    http.HandleFunc("/post/delete", authMiddleware(deletePostHandler))
+
 	// Serve static files
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
@@ -274,4 +278,98 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 		MaxAge: -1, // Delete the cookie
 	})
 	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
+func createPostHandler(w http.ResponseWriter, r *http.Request) {
+    // Retrieve session token from cookie
+    cookie, err := r.Cookie("session_token")
+    if err != nil || cookie.Value == "" {
+        http.Redirect(w, r, "/login", http.StatusFound)
+        return
+    }
+
+    // Get logged-in user's ID from the session token
+    userID := cookie.Value
+
+    if r.Method == http.MethodPost {
+        title := r.FormValue("title")
+        body := r.FormValue("body")
+
+        _, err := db.Exec("INSERT INTO Posts (PostTitle, PostBody, Users_UserID) VALUES (?, ?, ?)", title, body, userID)
+        if err != nil {
+            http.Error(w, "Failed to create post", http.StatusInternalServerError)
+            return
+        }
+
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
+        return
+    }
+
+    tmpl := template.Must(template.ParseFiles("templates/create_post.html"))
+    tmpl.Execute(w, nil)
+}
+
+func editPostHandler(w http.ResponseWriter, r *http.Request) {
+    // Retrieve session token from cookie
+    cookie, err := r.Cookie("session_token")
+    if err != nil || cookie.Value == "" {
+        http.Redirect(w, r, "/login", http.StatusFound)
+        return
+    }
+
+    userID := cookie.Value
+    postID := r.URL.Query().Get("id")
+
+    if r.Method == http.MethodPost {
+        title := r.FormValue("title")
+        body := r.FormValue("body")
+
+        _, err := db.Exec("UPDATE Posts SET PostTitle = ?, PostBody = ?, updated_at = CURRENT_TIMESTAMP WHERE PostID = ? AND Users_UserID = ?", title, body, postID, userID)
+        if err != nil {
+            http.Error(w, "Failed to update post", http.StatusInternalServerError)
+            return
+        }
+
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
+        return
+    }
+
+    // Fetch post details
+    var postTitle, postBody string
+    err = db.QueryRow("SELECT PostTitle, PostBody FROM Posts WHERE PostID = ? AND Users_UserID = ?", postID, userID).Scan(&postTitle, &postBody)
+    if err != nil {
+        http.Error(w, "Post not found or you don't have permission to edit this post", http.StatusForbidden)
+        return
+    }
+
+    tmpl := template.Must(template.ParseFiles("templates/edit_post.html"))
+    tmpl.Execute(w, struct {
+        PostID    string
+        PostTitle string
+        PostBody  string
+    }{
+        PostID:    postID,
+        PostTitle: postTitle,
+        PostBody:  postBody,
+    })
+}
+
+func deletePostHandler(w http.ResponseWriter, r *http.Request) {
+    // Retrieve session token from cookie
+    cookie, err := r.Cookie("session_token")
+    if err != nil || cookie.Value == "" {
+        http.Redirect(w, r, "/login", http.StatusFound)
+        return
+    }
+
+    userID := cookie.Value
+    postID := r.URL.Query().Get("id")
+
+    _, err = db.Exec("DELETE FROM Posts WHERE PostID = ? AND Users_UserID = ?", postID, userID)
+    if err != nil {
+        http.Error(w, "Failed to delete post", http.StatusInternalServerError)
+        return
+    }
+
+    http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
