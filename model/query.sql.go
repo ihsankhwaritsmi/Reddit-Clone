@@ -50,15 +50,22 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Res
 }
 
 const getAllPosts = `-- name: GetAllPosts :many
-SELECT PostID, PostTitle, PostBody
+SELECT 
+    PostID, 
+    PostTitle, 
+    PostBody,
+    UserUsername
 FROM Posts
+JOIN Users
+ON Posts.Users_UserID = Users.UserID
 ORDER BY created_at DESC
 `
 
 type GetAllPostsRow struct {
-	Postid    int64
-	Posttitle string
-	Postbody  string
+	Postid       int64
+	Posttitle    string
+	Postbody     string
+	Userusername string
 }
 
 func (q *Queries) GetAllPosts(ctx context.Context) ([]GetAllPostsRow, error) {
@@ -70,7 +77,78 @@ func (q *Queries) GetAllPosts(ctx context.Context) ([]GetAllPostsRow, error) {
 	var items []GetAllPostsRow
 	for rows.Next() {
 		var i GetAllPostsRow
-		if err := rows.Scan(&i.Postid, &i.Posttitle, &i.Postbody); err != nil {
+		if err := rows.Scan(
+			&i.Postid,
+			&i.Posttitle,
+			&i.Postbody,
+			&i.Userusername,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUser = `-- name: GetUser :one
+SELECT UserID, UserUsername, UserEmail
+FROM Users
+WHERE UserID = ?
+`
+
+type GetUserRow struct {
+	Userid       int64
+	Userusername string
+	Useremail    string
+}
+
+func (q *Queries) GetUser(ctx context.Context, userid int64) (GetUserRow, error) {
+	row := q.db.QueryRowContext(ctx, getUser, userid)
+	var i GetUserRow
+	err := row.Scan(&i.Userid, &i.Userusername, &i.Useremail)
+	return i, err
+}
+
+const getUserPosts = `-- name: GetUserPosts :many
+SELECT 
+    PostID, 
+    PostTitle, 
+    PostBody,
+    UserUsername
+FROM Posts
+JOIN Users
+ON Posts.Users_UserID = Users.UserID
+WHERE Users_UserID = ?
+`
+
+type GetUserPostsRow struct {
+	Postid       int64
+	Posttitle    string
+	Postbody     string
+	Userusername string
+}
+
+func (q *Queries) GetUserPosts(ctx context.Context, usersUserid int64) ([]GetUserPostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserPosts, usersUserid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserPostsRow
+	for rows.Next() {
+		var i GetUserPostsRow
+		if err := rows.Scan(
+			&i.Postid,
+			&i.Posttitle,
+			&i.Postbody,
+			&i.Userusername,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

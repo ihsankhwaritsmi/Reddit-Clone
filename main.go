@@ -39,12 +39,21 @@ func run() error {
 	authGroup := router.Group("/")
 	authGroup.Use(handlers.AuthMiddleware())
 	authGroup.GET("/home", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "home.html", nil)
+		handlers.AllPostHandler(c, ctx, queries)
 	})
 
-	// router.GET("/home", func(c *gin.Context) {
-	// 	c.HTML(http.StatusOK, "home.html", nil)
-	// })
+	authGroup.GET("/profile", func(c *gin.Context) {
+		handlers.ProfileHandler(c, ctx, queries)
+
+	})
+
+	authGroup.GET("/logout", func(c *gin.Context) {
+		handlers.LogoutHandler(c, ctx, queries)
+	})
+
+	authGroup.GET("/myposts", func(c *gin.Context) {
+		handlers.PersonalPostHandler(c, ctx, queries)
+	})
 
 	v := router.Group("/api")
 	{
