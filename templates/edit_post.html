@@ -30,7 +30,7 @@
         <!-- Edit Post Form -->
         <form method="post" class="space-y-6">
           <!-- Hidden Field for Post ID -->
-          <input type="hidden" name="id" value="{{.PostID}}" />
+          <input type="hidden" name="id" value="{{.PostToEdit.Postid}}" />
 
           <!-- Title Input -->
           <div class="space-y-2">
@@ -41,7 +41,7 @@
               type="text"
               id="title"
               name="title"
-              value="{{.PostTitle}}"
+              value="{{.PostToEdit.Posttitle}}"
               class="w-full p-3 border rounded-lg"
               required
             />
@@ -58,7 +58,7 @@
               class="w-full p-3 border rounded-lg h-48"
               required
             >
-{{.PostBody}}</textarea
+{{.PostToEdit.Postbody}}</textarea
             >
           </div>
 

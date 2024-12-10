@@ -33,4 +33,27 @@ SELECT
 FROM Posts
 JOIN Users
 ON Posts.Users_UserID = Users.UserID
-WHERE Users_UserID = ?;
+WHERE Users_UserID = ?
+ORDER BY created_at DESC;
+
+-- name: CreatePost :execresult
+INSERT INTO Posts (PostTitle, PostBody, Users_UserID)
+VALUES (?, ?, ?);
+
+-- name: DeletePost :exec
+DELETE FROM Posts WHERE PostID = ?
+AND Users_UserID = ?;
+
+-- name: UpdatePost :exec
+UPDATE Posts
+SET PostTitle = ?, PostBody = ?
+WHERE PostID = ?
+AND Users_UserID = ?;
+
+-- name: GetPost :one
+SELECT 
+    PostID, 
+    PostTitle, 
+    PostBody
+FROM Posts
+WHERE PostID = ?

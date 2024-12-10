@@ -19,3 +19,15 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func MethodOverride() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.Request.Method == http.MethodPost {
+			override := c.PostForm("_method")
+			if override != "" {
+				c.Request.Method = override
+			}
+		}
+		c.Next()
+	}
+}

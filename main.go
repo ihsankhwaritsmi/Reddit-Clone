@@ -9,6 +9,7 @@ import (
 	"reddit-clone/handlers"
 	sqlc "reddit-clone/model"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -26,7 +27,18 @@ func run() error {
 	queries := sqlc.New(db)
 	router := gin.Default()
 
+	router.Use(cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "POST", "DELETE", "PUT", "PATCH"},
+		AllowHeaders:     []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	}))
+
 	router.LoadHTMLGlob("templates/*")
+
+	router.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusFound, "/home")
+	})
 
 	router.GET("/register", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "register.html", nil)
@@ -38,6 +50,7 @@ func run() error {
 
 	authGroup := router.Group("/")
 	authGroup.Use(handlers.AuthMiddleware())
+
 	authGroup.GET("/home", func(c *gin.Context) {
 		handlers.AllPostHandler(c, ctx, queries)
 	})
@@ -53,6 +66,26 @@ func run() error {
 
 	authGroup.GET("/myposts", func(c *gin.Context) {
 		handlers.PersonalPostHandler(c, ctx, queries)
+	})
+
+	authGroup.POST("/createpost", func(c *gin.Context) {
+		handlers.CreatePostHandler(c, ctx, queries)
+	})
+
+	authGroup.GET("/post/create", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "create_post.html", nil)
+	})
+
+	authGroup.GET("/post/edit/:id", func(c *gin.Context) {
+		handlers.EditPostPlaceholderHandler(c, ctx, queries)
+	})
+
+	authGroup.POST("/post/delete/:id", func(c *gin.Context) {
+		handlers.DeletePostHandler(c, ctx, queries)
+	})
+
+	authGroup.POST("/post/edit/:id", func(c *gin.Context) {
+		handlers.EditPostHandler(c, ctx, queries)
 	})
 
 	v := router.Group("/api")

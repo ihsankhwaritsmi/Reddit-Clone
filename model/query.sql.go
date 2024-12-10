@@ -34,6 +34,21 @@ func (q *Queries) AuthenticateUser(ctx context.Context, arg AuthenticateUserPara
 	return i, err
 }
 
+const createPost = `-- name: CreatePost :execresult
+INSERT INTO Posts (PostTitle, PostBody, Users_UserID)
+VALUES (?, ?, ?)
+`
+
+type CreatePostParams struct {
+	Posttitle   string
+	Postbody    string
+	UsersUserid int64
+}
+
+func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createPost, arg.Posttitle, arg.Postbody, arg.UsersUserid)
+}
+
 const createUser = `-- name: CreateUser :execresult
 INSERT INTO Users (UserUsername, UserEmail, UserPassword)
 VALUES (?, ?, ?)
@@ -47,6 +62,21 @@ type CreateUserParams struct {
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, createUser, arg.Userusername, arg.Useremail, arg.Userpassword)
+}
+
+const deletePost = `-- name: DeletePost :exec
+DELETE FROM Posts WHERE PostID = ?
+AND Users_UserID = ?
+`
+
+type DeletePostParams struct {
+	Postid      int64
+	UsersUserid int64
+}
+
+func (q *Queries) DeletePost(ctx context.Context, arg DeletePostParams) error {
+	_, err := q.db.ExecContext(ctx, deletePost, arg.Postid, arg.UsersUserid)
+	return err
 }
 
 const getAllPosts = `-- name: GetAllPosts :many
@@ -96,6 +126,28 @@ func (q *Queries) GetAllPosts(ctx context.Context) ([]GetAllPostsRow, error) {
 	return items, nil
 }
 
+const getPost = `-- name: GetPost :one
+SELECT 
+    PostID, 
+    PostTitle, 
+    PostBody
+FROM Posts
+WHERE PostID = ?
+`
+
+type GetPostRow struct {
+	Postid    int64
+	Posttitle string
+	Postbody  string
+}
+
+func (q *Queries) GetPost(ctx context.Context, postid int64) (GetPostRow, error) {
+	row := q.db.QueryRowContext(ctx, getPost, postid)
+	var i GetPostRow
+	err := row.Scan(&i.Postid, &i.Posttitle, &i.Postbody)
+	return i, err
+}
+
 const getUser = `-- name: GetUser :one
 SELECT UserID, UserUsername, UserEmail
 FROM Users
@@ -125,6 +177,7 @@ FROM Posts
 JOIN Users
 ON Posts.Users_UserID = Users.UserID
 WHERE Users_UserID = ?
+ORDER BY created_at DESC
 `
 
 type GetUserPostsRow struct {
@@ -160,4 +213,28 @@ func (q *Queries) GetUserPosts(ctx context.Context, usersUserid int64) ([]GetUse
 		return nil, err
 	}
 	return items, nil
+}
+
+const updatePost = `-- name: UpdatePost :exec
+UPDATE Posts
+SET PostTitle = ?, PostBody = ?
+WHERE PostID = ?
+AND Users_UserID = ?
+`
+
+type UpdatePostParams struct {
+	Posttitle   string
+	Postbody    string
+	Postid      int64
+	UsersUserid int64
+}
+
+func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) error {
+	_, err := q.db.ExecContext(ctx, updatePost,
+		arg.Posttitle,
+		arg.Postbody,
+		arg.Postid,
+		arg.UsersUserid,
+	)
+	return err
 }
