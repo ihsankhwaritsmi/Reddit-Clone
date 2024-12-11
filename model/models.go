@@ -8,6 +8,15 @@ import (
 	"database/sql"
 )
 
+type Comment struct {
+	Commentid   int64
+	Commentbody string
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
+	UsersUserid int64
+	PostsPostid int64
+}
+
 type Post struct {
 	Postid      int64
 	Posttitle   string

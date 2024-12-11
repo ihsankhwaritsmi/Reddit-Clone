@@ -34,6 +34,22 @@ func (q *Queries) AuthenticateUser(ctx context.Context, arg AuthenticateUserPara
 	return i, err
 }
 
+const createComment = `-- name: CreateComment :exec
+INSERT INTO Comments (CommentBody, Users_UserID, Posts_PostID)
+VALUES (?, ?, ?)
+`
+
+type CreateCommentParams struct {
+	Commentbody string
+	UsersUserid int64
+	PostsPostid int64
+}
+
+func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) error {
+	_, err := q.db.ExecContext(ctx, createComment, arg.Commentbody, arg.UsersUserid, arg.PostsPostid)
+	return err
+}
+
 const createPost = `-- name: CreatePost :execresult
 INSERT INTO Posts (PostTitle, PostBody, Users_UserID)
 VALUES (?, ?, ?)
@@ -112,6 +128,66 @@ func (q *Queries) GetAllPosts(ctx context.Context) ([]GetAllPostsRow, error) {
 			&i.Posttitle,
 			&i.Postbody,
 			&i.Userusername,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getComments = `-- name: GetComments :many
+SELECT 
+    com.CommentID,
+    com.CommentBody,
+    com.created_at,
+    usr.UserID,
+    usr.UserUsername,
+    pst.PostID,
+    pst.PostTitle
+FROM 
+    Comments AS com
+JOIN 
+    Users AS usr ON com.Users_UserID = usr.UserID
+JOIN 
+    Posts AS pst ON com.Posts_PostID = pst.PostID
+WHERE 
+    pst.PostID = ?
+`
+
+type GetCommentsRow struct {
+	Commentid    int64
+	Commentbody  string
+	CreatedAt    sql.NullTime
+	Userid       int64
+	Userusername string
+	Postid       int64
+	Posttitle    string
+}
+
+func (q *Queries) GetComments(ctx context.Context, postid int64) ([]GetCommentsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getComments, postid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCommentsRow
+	for rows.Next() {
+		var i GetCommentsRow
+		if err := rows.Scan(
+			&i.Commentid,
+			&i.Commentbody,
+			&i.CreatedAt,
+			&i.Userid,
+			&i.Userusername,
+			&i.Postid,
+			&i.Posttitle,
 		); err != nil {
 			return nil, err
 		}

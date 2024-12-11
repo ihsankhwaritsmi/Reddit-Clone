@@ -56,4 +56,27 @@ SELECT
     PostTitle, 
     PostBody
 FROM Posts
-WHERE PostID = ?
+WHERE PostID = ?;
+
+-- name: GetComments :many
+SELECT 
+    com.CommentID,
+    com.CommentBody,
+    com.created_at,
+    usr.UserID,
+    usr.UserUsername,
+    pst.PostID,
+    pst.PostTitle
+FROM 
+    Comments AS com
+JOIN 
+    Users AS usr ON com.Users_UserID = usr.UserID
+JOIN 
+    Posts AS pst ON com.Posts_PostID = pst.PostID
+WHERE 
+    pst.PostID = ?;
+
+-- name: CreateComment :exec
+INSERT INTO Comments (CommentBody, Users_UserID, Posts_PostID)
+VALUES (?, ?, ?);
+
