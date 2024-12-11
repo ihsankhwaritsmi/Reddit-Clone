@@ -88,6 +88,14 @@ func run() error {
 		handlers.EditPostHandler(c, ctx, queries)
 	})
 
+	authGroup.GET("/post/:id", func(c *gin.Context) {
+		handlers.SinglePostHandler(c, ctx, queries)
+	})
+
+	authGroup.POST("/post/:id/createcomment", func(c *gin.Context) {
+		handlers.CreateCommentsHandler(c, ctx, queries)
+	})
+
 	v := router.Group("/api")
 	{
 		v.POST("/register", func(c *gin.Context) {
